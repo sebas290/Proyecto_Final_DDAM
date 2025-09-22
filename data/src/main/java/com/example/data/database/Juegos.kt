@@ -2,7 +2,7 @@ package com.example.data.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDateTime
+
 @Entity(tableName = "juegos")
 
 data class Juegos(
@@ -11,6 +11,6 @@ data class Juegos(
     val genero: String,
     val calificacion: Int,
     val descripcion: String,
-    val fecha: LocalDateTime,
-    val colaboradorId: Int
+    val fecha: String,
+    val colaboradorId: String
 )

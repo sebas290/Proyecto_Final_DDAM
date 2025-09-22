@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
-    id("com.google.gms.google-services") version "4.4.3" apply false
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -42,16 +42,33 @@ android {
 }
 
 dependencies {
-
+    // Android core and Compose dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Use the Compose BoM to manage versions
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.runtime.ktx)
+
+    // Use the Firebase BoM to manage versions
+    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+    // Specific Firebase dependencies (versions handled by the BoM)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Navigation dependency (remove the duplicate)
+    implementation("androidx.navigation:navigation-compose:2.8.2")
+
+    // Module dependencies
+    implementation(project(":Catalogo"))
+    implementation(project(":Autenticacion"))
+    implementation(project(":Comunicacion"))
+
+    // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,11 +76,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("androidx.navigation:navigation-compose:2.8.2")
-    implementation(project(":Catalogo"))
 }
-
-apply (plugin = "com.google.gms.google-services")

@@ -38,19 +38,29 @@ android {
 }
 
 dependencies {
-
+    // Core Android libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+
+    // Add the Compose Bill of Materials (BoM) here to manage versions
+    implementation(platform(libs.androidx.compose.bom))
+
+    // Use the libs catalog for Compose and Navigation
     implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
+
+    // Dependencies for the Compose UI and tooling
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    debugImplementation(libs.androidx.ui.tooling)
+
+    // Project module dependency
+    implementation(project(":data"))
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("androidx.compose.ui:ui:1.5.3")
-    implementation("androidx.compose.material3:material3:1.1.2")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.5.3")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.5.3")
-    implementation(project(":data"))
 }

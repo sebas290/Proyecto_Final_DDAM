@@ -3,7 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.kapt")
-    id("com.google.gms.google-services") version "4.4.3" apply false
+    // The Google Services plugin should be applied here without a version or 'apply false'
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -36,25 +37,25 @@ android {
 }
 
 dependencies {
-    // Core Android
+    // Core Android libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    // Room (versión 2.6.1)
+    // Room (versions are now consistent with Room's latest version 2.6.1)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
-    // Lifecycle / ViewModel (usando versión más nueva si prefieres mantener 2.8.6, o igualar a 2.6.2)
+    // Lifecycle (using version 2.6.2 for consistency)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 
-    // Coroutines (versión 1.7.3)
+    // Coroutines (using version 1.7.3)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Firebase
+    // Firebase (using BOM for version management)
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
