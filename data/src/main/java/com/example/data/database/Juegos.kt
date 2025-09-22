@@ -2,11 +2,15 @@ package com.example.data.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
+import java.time.LocalDateTime
 @Entity(tableName = "juegos")
-data class Juego(
+
+data class Juegos(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val nombre: String,
+    val titulo: String,
     val genero: String,
-    val calificacion: Int
+    val calificacion: Int,
+    val descripcion: String,
+    val fecha: LocalDateTime,
+    val colaboradorId: Int
 )

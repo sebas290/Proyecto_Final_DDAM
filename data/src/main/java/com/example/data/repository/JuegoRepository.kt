@@ -1,11 +1,18 @@
 package com.example.data.repository
 
 import com.example.data.dao.JuegoDao
-import com.example.data.database.Juego
+import com.example.data.database.Juegos
+import kotlinx.coroutines.flow.Flow
 
-class JuegoRepository(private val dao: JuegoDao) {
-    suspend fun agregarJuego(juego: Juego) = dao.insert(juego)
-    suspend fun actualizarJuego(juego: Juego) = dao.update(juego)
-    suspend fun eliminarJuego(juego: Juego) = dao.delete(juego)
-    suspend fun obtenerJuegos() = dao.getAll()
+class JuegoRepository(private val juegoDao: JuegoDao) {
+
+    suspend fun insert(juego: Juegos) = juegoDao.insert(juego)
+
+    suspend fun update(juego: Juegos) = juegoDao.update(juego)
+
+    suspend fun delete(juego: Juegos) = juegoDao.delete(juego)
+
+    suspend fun getAllJuegos(): List<Juegos> = juegoDao.getAll()
+
+    suspend fun getJuegoById(id: Int): Juegos? = juegoDao.getById(id)
 }
