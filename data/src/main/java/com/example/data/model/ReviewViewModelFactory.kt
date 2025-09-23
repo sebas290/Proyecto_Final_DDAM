@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.data.repository.ReviewsRepository
 
-class ReseñaViewModelFactory(
+class ReviewViewModelFactory(
     private val repository: ReviewsRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
