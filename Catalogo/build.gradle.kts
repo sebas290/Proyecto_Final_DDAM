@@ -10,7 +10,6 @@ android {
 
     defaultConfig {
         minSdk = 26
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -34,32 +33,29 @@ android {
     buildFeatures {
         compose = true
     }
-
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 }
 
 dependencies {
-    // Core Android libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    // Add the Compose Bill of Materials (BoM) here to manage versions
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
-
-    // Use the libs catalog for Compose and Navigation
-    implementation(libs.androidx.compose.runtime)
+    implementation("androidx.compose.runtime:runtime") // 🚀 faltaba
     implementation(libs.androidx.navigation.runtime.ktx)
-
-    // Dependencies for the Compose UI and tooling
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.ui.tooling)
 
-    // Project module dependency
+    // Dependencia al módulo data
     implementation(project(":data"))
 
-    // Testing
+    // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

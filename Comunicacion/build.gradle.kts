@@ -11,7 +11,6 @@ android {
 
     defaultConfig {
         minSdk = 26
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -35,35 +34,30 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 }
 
 dependencies {
-    // Core Android libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
-    // Use the Compose Bill of Materials (BoM) to manage all Compose versions
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
-
-    // Core Jetpack Compose dependencies
-    implementation(libs.androidx.compose.runtime)
+    implementation("androidx.compose.runtime:runtime") // 🚀 asegurado
     implementation(libs.androidx.compose.foundation)
-
-    // Add the missing Compose UI dependencies
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation(libs.androidx.compose.material3)
-
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // Use the Firebase BoM to manage Firebase versions
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
-
-    // Specific Firebase dependency (version is handled by the BoM)
     implementation("com.google.firebase:firebase-firestore-ktx")
 
-    // Test dependencies
+    // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

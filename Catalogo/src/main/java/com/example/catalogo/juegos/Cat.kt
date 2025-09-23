@@ -2,6 +2,7 @@ package com.example.catalogo.juegos
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -14,7 +15,7 @@ import androidx.navigation.NavController
 import com.example.data.database.Juegos
 
 @Composable
-fun ListaJuegosScreen(navController: NavController) {
+fun ListaJuegosScreen(navController: NavController, onChatClick: () -> Unit)  {
     val juegos = listOf(
         Juegos(
             id = 1,
@@ -60,6 +61,10 @@ fun ListaJuegosScreen(navController: NavController) {
                         Text(text = "Descripción: ${juego.descripcion}")
                         Text(text = "Fecha: ${juego.fecha}")
                         Text(text = "Colaborador ID: ${juego.colaboradorId}")
+
+                        Button(onClick = onChatClick) {
+                            Text("Ir al Chat")
+                        }
                     }
                 }
             }

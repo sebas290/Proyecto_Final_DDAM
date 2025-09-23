@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "955903094104",
+    "project_id": "juegos-indi",
+    "storage_bucket": "juegos-indi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:955903094104:android:d1df87887e9be5ca7b092d",
+        "android_client_info": {
+          "package_name": "com.example.ClaseBeforeProject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "955903094104-b0hfdtapvq95l4l8ukisk17h1nhmnkv0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA29nbpsaBsH6Om2UAWkXBHTzT-VyWqbIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "955903094104-b0hfdtapvq95l4l8ukisk17h1nhmnkv0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

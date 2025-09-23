@@ -1,14 +1,14 @@
 package com.example.clasebeforeproject.Nav
 
+import Chat.ChatScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.autenticacion.AuthScreen
 import com.example.catalogo.juegos.ListaJuegosScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import comunicacion.ChatScreen
+import login.AuthScreen
 
 @Composable
 fun AppNavHost(
@@ -18,19 +18,30 @@ fun AppNavHost(
 ) {
     NavHost(navController = navController, startDestination = "login") {
 
+        // Pantalla de catálogo
         composable("listaJuegos") {
-            ListaJuegosScreen(navController)
+            ListaJuegosScreen(
+                navController = navController,
+                onChatClick = {
+                    navController.navigate("chat")
+                }
+            )
         }
+
+        // Pantalla de login
         composable("login") {
             AuthScreen(
                 auth = auth,
                 onSuccess = {
-                    navController.navigate("chat") {
+                    // Navega primero a la lista de juegos
+                    navController.navigate("listaJuegos") {
                         popUpTo("login") { inclusive = true }
                     }
                 }
             )
         }
+
+        // Pantalla de chat
         composable("chat") {
             val user = auth.currentUser?.email ?: "anonymous"
             ChatScreen(db = db, user = user)
