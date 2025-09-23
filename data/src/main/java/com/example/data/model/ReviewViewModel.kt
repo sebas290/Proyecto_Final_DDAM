@@ -41,7 +41,7 @@ class ReviewViewModel(private val repository: ReviewsRepository) : ViewModel() {
         }
     }
 
-    fun getResenasPorJuego(juegoId: Int) {
+    fun getReviewPorJuego(juegoId: Int) {
         viewModelScope.launch {
             _reseñas.value = repository.getResenasPorJuego(juegoId)
             _reseñasConUsuario.value = repository.getResenasConUsuario(juegoId)

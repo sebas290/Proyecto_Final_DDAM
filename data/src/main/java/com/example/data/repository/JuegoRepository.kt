@@ -14,5 +14,5 @@ class JuegoRepository(private val juegoDao: JuegoDao) {
 
     suspend fun getAllJuegos(): List<Juegos> = juegoDao.getAll()
 
-    suspend fun getJuegoById(id: Int): Juegos? = juegoDao.getById(id)
+    suspend fun getReviewPorJuego(id: Int): Juegos? = juegoDao.getById(id)
 }
