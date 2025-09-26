@@ -10,9 +10,9 @@ import java.time.LocalDateTime
     tableName = "reseñas",
     foreignKeys = [
         ForeignKey(entity = Usuarios::class, parentColumns = ["id"], childColumns = ["usuarioId"], onDelete = ForeignKey.CASCADE),
-        ForeignKey(entity = Juegos::class, parentColumns = ["id"], childColumns = ["juegoId"], onDelete = ForeignKey.CASCADE)
+        ForeignKey(entity = Juegos::class, parentColumns = ["id"], childColumns = ["videojuegoId"], onDelete = ForeignKey.CASCADE)
     ],
-    indices = [Index("usuarioId"), Index("juegoId")]
+    indices = [Index("usuarioId"), Index("videojuegoId")]
 )
 data class Reseña(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

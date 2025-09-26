@@ -2,7 +2,7 @@ package com.example.data.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.dao.ReseñaConUsuario
+import com.example.data.ClasesRelacionales.ReseñaConUsuarioYJuego
 import com.example.data.database.Reseña
 import com.example.data.repository.ReviewsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +14,8 @@ class ReviewViewModel(private val repository: ReviewsRepository) : ViewModel() {
     private val _reseñas = MutableStateFlow<List<Reseña>>(emptyList())
     val reseñas: StateFlow<List<Reseña>> get() = _reseñas
 
-    private val _reseñasConUsuario = MutableStateFlow<List<ReseñaConUsuario>>(emptyList())
-    val reseñasConUsuario: StateFlow<List<ReseñaConUsuario>> get() = _reseñasConUsuario
+    private val _reseñasConUsuario = MutableStateFlow<List<ReseñaConUsuarioYJuego>>(emptyList())
+    val reseñasConUsuario: StateFlow<List<ReseñaConUsuarioYJuego>> get() = _reseñasConUsuario
 
     fun addReseña(resena: Reseña) {
         viewModelScope.launch {

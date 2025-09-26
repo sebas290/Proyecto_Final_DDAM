@@ -1,6 +1,6 @@
 package com.example.data.repository
 
-import com.example.data.dao.ReseñaConUsuario
+import com.example.data.ClasesRelacionales.ReseñaConUsuarioYJuego
 import com.example.data.dao.ReseñaDao
 import com.example.data.database.Reseña
 
@@ -16,5 +16,5 @@ class ReviewsRepository(private val reseñaDao: ReseñaDao) {
 
     suspend fun getResenasPorUsuario(usuarioId: Int): List<Reseña> = reseñaDao.getReseñasPorUsuario(usuarioId)
 
-    suspend fun getResenasConUsuario(juegoId: Int): List<ReseñaConUsuario> = reseñaDao.getReseñasConUsuario(juegoId)
+    suspend fun getResenasConUsuario(juegoId: Int): List<ReseñaConUsuarioYJuego> = reseñaDao.getReseñasConUsuario(juegoId)
 }

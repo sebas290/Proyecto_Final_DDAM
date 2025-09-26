@@ -10,6 +10,5 @@ data class Usuarios(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val alias: String,
     val correo: String,
-    val password: String,
-    val rol: String
+    val password: String
 )

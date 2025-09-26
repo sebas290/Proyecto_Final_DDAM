@@ -51,8 +51,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.ui.tooling)
+    implementation("androidx.activity:activity-compose:1.8.0")
 
-    // Dependencia al módulo data
+
     implementation(project(":data"))
 
     // Test
