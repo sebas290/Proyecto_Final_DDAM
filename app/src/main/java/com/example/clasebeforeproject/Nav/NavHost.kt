@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.catalogo.juegos.AgregarJuegoScreen
 import com.example.catalogo.juegos.ListaJuegosScreen
+import com.example.catalogo.juegos.ListaReseñasScreen
+import com.example.catalogo.reseñas.AgregarReseñaScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import login.AuthScreen
@@ -43,7 +45,9 @@ fun AppNavHost(
             ListaJuegosScreen(
                 navController = navController,
                 viewModel = juegosViewModel,
-                onChatClick = { /* navegar a reseñas */ },
+                onChatClick = { juegoId ->
+                    navController.navigate("listaResenas/$juegoId")
+                },
                 usuarioId = usuarioId
             )
         }
@@ -57,5 +61,27 @@ fun AppNavHost(
                 usuarioId = usuarioId
             )
         }
+
+        // Pantalla de reseñas
+        composable("listaResenas/{juegoId}") { backStackEntry ->
+            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toInt() ?: 0
+            ListaReseñasScreen(
+                navController = navController,
+                reviewViewModel = reseñasViewModel,
+                juegoId = juegoId
+            )
+        }
+
+        composable("agregarReseña/{juegoId}/{usuarioId}") { backStackEntry ->
+            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toIntOrNull() ?: 0
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
+            AgregarReseñaScreen(
+                navController = navController,
+                reviewViewModel = reseñasViewModel,
+                juegoId = juegoId,
+                usuarioId = usuarioId
+            )
+        }
+
     }
 }

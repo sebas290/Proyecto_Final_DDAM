@@ -31,13 +31,14 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java,
             "usuarios_db"
         )
-            .fallbackToDestructiveMigration() // borra y recrea si cambia el esquema
+            .fallbackToDestructiveMigration()
             .build()
 
         // Repositorios
         val usuariosRepository = UsuariosRepository(roomDb.UserDao())
         val juegosRepository = JuegoRepository(roomDb.GameDao())
-        val reseñasRepository = ReviewsRepository(roomDb.ReviewDao())
+        val reseñasRepository = ReviewsRepository(roomDb.ReviewDao(), roomDb.GameDao())
+
 
         // ViewModels
         val usuariosViewModel = ViewModelProvider(

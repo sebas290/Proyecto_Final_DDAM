@@ -2,6 +2,8 @@ package com.example.catalogo.juegos
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
@@ -14,14 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.data.database.Juegos
 import com.example.data.model.JuegosViewModel
 
 @Composable
 fun ListaJuegosScreen(
     navController: NavController,
     viewModel: JuegosViewModel,
-    onChatClick: () -> Unit,
+    onChatClick: (Int) -> Unit,
     usuarioId: Int
 ) {
     val juegos by viewModel.juegos.collectAsState()
@@ -33,8 +34,12 @@ fun ListaJuegosScreen(
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            juegos.forEach { juegoConUsuario ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            items(juegos) { juegoConUsuario ->
                 val juego = juegoConUsuario.juego
                 val usuario = juegoConUsuario.usuario
 
@@ -53,12 +58,12 @@ fun ListaJuegosScreen(
                         Text(text = "Fecha: ${juego.fecha}")
 
                         Row {
-                            Button(onClick = onChatClick) {
-                                Text("Agregar una reseña")
+                            Button(onClick = { navController.navigate("agregarReseña/${juego.id}/$usuarioId") }) {
+                                Text("Agregar reseña")
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = onChatClick) {
-                                Text("Ver las reseñas")
+                            Button(onClick = { navController.navigate("listaResenas/${juego.id}") }) {
+                                Text("Ver reseñas")
                             }
                         }
                     }
@@ -67,4 +72,3 @@ fun ListaJuegosScreen(
         }
     }
 }
-
