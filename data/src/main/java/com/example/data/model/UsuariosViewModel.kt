@@ -38,4 +38,8 @@ class UsuariosViewModel(private val repository: UsuariosRepository) : ViewModel(
     suspend fun getUsuarioByAlias(alias: String): Usuarios? {
         return repository.getUsuarioByAlias(alias)
     }
+
+    suspend fun getUsuarioByIdSuspend(id: Int): Usuarios? {
+        return repository.getUsuarioById(id)
+    }
 }
