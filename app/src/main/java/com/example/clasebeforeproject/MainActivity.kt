@@ -48,8 +48,9 @@ class MainActivity : ComponentActivity() {
             this, UsuariosViewModelFactory(usuariosRepository)
         )[UsuariosViewModel::class.java]
 
+        // CAMBIO AQUÍ: Pasar ambos repositorios al JuegosViewModelFactory
         val juegosViewModel = ViewModelProvider(
-            this, JuegosViewModelFactory(juegosRepository)
+            this, JuegosViewModelFactory(juegosRepository, reseñasRepository)
         )[JuegosViewModel::class.java]
 
         val reseñasViewModel = ViewModelProvider(
