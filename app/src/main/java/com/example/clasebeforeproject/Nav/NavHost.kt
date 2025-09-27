@@ -14,6 +14,7 @@ import login.AuthScreen
 import com.example.data.model.UsuariosViewModel
 import com.example.data.model.JuegosViewModel
 import com.example.data.model.ReviewViewModel
+import Settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -22,11 +23,11 @@ fun AppNavHost(
     db: FirebaseFirestore,
     usuariosViewModel: UsuariosViewModel,
     juegosViewModel: JuegosViewModel,
-    reseñasViewModel: ReviewViewModel
+    reseñasViewModel: ReviewViewModel,
+    onSettingsChanged: (String, String, Boolean) -> Unit
 ) {
     NavHost(navController = navController, startDestination = "login") {
 
-        // Pantalla de login
         composable("login") {
             AuthScreen(
                 auth = auth,
@@ -39,9 +40,8 @@ fun AppNavHost(
             )
         }
 
-        // Lista de juegos
         composable("listaJuegos/{usuarioId}") { backStackEntry ->
-            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toInt() ?: 0
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             ListaJuegosScreen(
                 navController = navController,
                 viewModel = juegosViewModel,
@@ -52,9 +52,8 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla para agregar juego
         composable("agregarJuego/{usuarioId}") { backStackEntry ->
-            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toInt() ?: 0
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             AgregarJuegoScreen(
                 navController = navController,
                 juegosViewModel = juegosViewModel,
@@ -62,9 +61,8 @@ fun AppNavHost(
             )
         }
 
-        // Pantalla de reseñas
         composable("listaResenas/{juegoId}") { backStackEntry ->
-            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toInt() ?: 0
+            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toIntOrNull() ?: 0
             ListaReseñasScreen(
                 navController = navController,
                 reviewViewModel = reseñasViewModel,
@@ -83,5 +81,12 @@ fun AppNavHost(
             )
         }
 
+        // Nueva ruta para la pantalla de ajustes, pasando el callback para actualizar preferencias
+        composable("settings") {
+            SettingsScreen(
+                navController = navController,
+                onSettingsChanged = onSettingsChanged
+            )
+        }
     }
 }

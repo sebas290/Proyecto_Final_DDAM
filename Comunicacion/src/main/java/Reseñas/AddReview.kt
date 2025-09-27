@@ -1,4 +1,4 @@
-package com.example.catalogo.reseñas // ajusta el package si lo tenías distinto
+package com.example.catalogo.reseñas
 
 import android.util.Log
 import android.widget.Toast
