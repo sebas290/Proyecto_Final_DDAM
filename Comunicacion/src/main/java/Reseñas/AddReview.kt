@@ -1,5 +1,6 @@
 package com.example.catalogo.reseñas
 
+import Filtro.CalificacionHelper
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -26,15 +28,20 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.data.database.Reseña
 import com.example.data.model.ReviewViewModel
+import com.example.data.model.JuegosViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDateTime
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgregarReseñaScreen(
     navController: NavController,
     reviewViewModel: ReviewViewModel,
+    juegosViewModel: JuegosViewModel,
     juegoId: Int,
     usuarioId: Int
 ) {
@@ -131,6 +138,19 @@ fun AgregarReseñaScreen(
 
                     // Guardar en base de datos local
                     reviewViewModel.addReseña(reseña)
+
+                    // Actualizar calificación del juego automáticamente
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            CalificacionHelper.actualizarCalificacionJuego(
+                                juegoId = juegoId,
+                                juegosViewModel = juegosViewModel,
+                                reviewViewModel = reviewViewModel
+                            )
+                        } catch (e: Exception) {
+                            Log.e("CalificacionUpdate", "Error actualizando calificación: ${e.message}")
+                        }
+                    }
 
                     // Guardar en Firestore
                     addReseñaToFirestore(reseña) { success, msg ->

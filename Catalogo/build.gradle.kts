@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.ui.tooling)
     implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
 
     implementation(project(":data"))
