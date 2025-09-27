@@ -1,5 +1,6 @@
 package com.example.catalogo.juegos
 
+import Filtro.CalificacionHelper
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -40,6 +41,25 @@ fun ListaJuegosScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     var deletedJuego by remember { mutableStateOf<JuegoConUsuario?>(null) }
 
+    // Variables para filtros
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var filtroCalificacionMin by remember { mutableFloatStateOf(0f) }
+    var filtroCalificacionMax by remember { mutableFloatStateOf(10f) }
+    var juegosFiltrados by remember { mutableStateOf(juegos) }
+
+    // Aplicar filtros cuando cambian los juegos o los filtros
+    LaunchedEffect(juegos, filtroCalificacionMin, filtroCalificacionMax) {
+        juegosFiltrados = if (filtroCalificacionMin == 0f && filtroCalificacionMax == 10f) {
+            juegos
+        } else {
+            CalificacionHelper.filtrarJuegosPorCalificacion(
+                juegos = juegos,
+                calificacionMinima = filtroCalificacionMin.toDouble(),
+                calificacionMaxima = filtroCalificacionMax.toDouble()
+            )
+        }
+    }
+
     // Lógica para deshacer eliminación
     deletedJuego?.let { juegoConUsuario ->
         LaunchedEffect(juegoConUsuario) {
@@ -63,6 +83,16 @@ fun ListaJuegosScreen(
             TopAppBar(
                 title = { Text("Lista de Juegos") },
                 actions = {
+                    // Botón de filtros
+                    IconButton(onClick = { showFilterDialog = true }) {
+                        Icon(
+                            Icons.Default.Tune,
+                            contentDescription = "Filtrar",
+                            tint = if (filtroCalificacionMin > 0f || filtroCalificacionMax < 10f)
+                                MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     // Nuevo icono de perfil
                     IconButton(onClick = { navController.navigate("perfil/$usuarioId") }) {
                         Icon(Icons.Default.Person, contentDescription = "Perfil")
@@ -90,44 +120,197 @@ fun ListaJuegosScreen(
                 Text("No hay juegos disponibles")
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                items(
-                    items = juegos,
-                    key = { it.juego.id }
-                ) { juegoConUsuario ->
-                    SwipeableJuegoCard(
-                        juegoConUsuario = juegoConUsuario,
-                        usuarioId = usuarioId,
-                        onEdit = { juego ->
-                            navController.navigate("agregarJuego/$usuarioId/${juego.id}")
-                        },
-                        onDelete = { juegoConUsuario ->
-                            viewModel.deleteJuego(juegoConUsuario.juego)
-                            deletedJuego = juegoConUsuario
-                        },
-                        onClick = { juego ->
-                            // Temporalmente comentado hasta crear la pantalla de detalle
-                            // navController.navigate("detalleJuego/${juego.id}")
-                            Toast.makeText(context, "Clic en ${juego.titulo}", Toast.LENGTH_SHORT).show()
-                        },
-                        onAddReview = { juego ->
-                            navController.navigate("agregarReseña/${juego.id}/$usuarioId")
-                        },
-                        onViewReviews = { juego ->
-                            navController.navigate("listaResenas/${juego.id}")
+            Column(modifier = Modifier.padding(padding)) {
+                // Mostrar información si hay filtros activos
+                if (filtroCalificacionMin > 0f || filtroCalificacionMax < 10f) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Filtrado: ${filtroCalificacionMin.toInt()}-${filtroCalificacionMax.toInt()}/10",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            TextButton(
+                                onClick = {
+                                    filtroCalificacionMin = 0f
+                                    filtroCalificacionMax = 10f
+                                }
+                            ) {
+                                Text("Limpiar")
+                            }
                         }
-                    )
+                    }
+                }
+
+                if (juegosFiltrados.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("No hay juegos con esa calificación")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(onClick = {
+                                filtroCalificacionMin = 0f
+                                filtroCalificacionMax = 10f
+                            }) {
+                                Text("Limpiar filtros")
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        items(
+                            items = juegosFiltrados,
+                            key = { it.juego.id }
+                        ) { juegoConUsuario ->
+                            SwipeableJuegoCard(
+                                juegoConUsuario = juegoConUsuario,
+                                usuarioId = usuarioId,
+                                onEdit = { juego ->
+                                    navController.navigate("agregarJuego/$usuarioId/${juego.id}")
+                                },
+                                onDelete = { juegoConUsuario ->
+                                    viewModel.deleteJuego(juegoConUsuario.juego)
+                                    deletedJuego = juegoConUsuario
+                                },
+                                onClick = { juego ->
+                                    // Temporalmente comentado hasta crear la pantalla de detalle
+                                    // navController.navigate("detalleJuego/${juego.id}")
+                                    Toast.makeText(context, "Clic en ${juego.titulo}", Toast.LENGTH_SHORT).show()
+                                },
+                                onAddReview = { juego ->
+                                    navController.navigate("agregarReseña/${juego.id}/$usuarioId")
+                                },
+                                onViewReviews = { juego ->
+                                    navController.navigate("listaResenas/${juego.id}")
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+
+    // Diálogo de filtros con estrellas interactivas
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text("Filtrar por calificación")
+                }
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Calificación mínima",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Estrellas para calificación mínima
+                    InteractiveStarRating(
+                        rating = filtroCalificacionMin.toInt(),
+                        onRatingChanged = { newRating ->
+                            filtroCalificacionMin = newRating.toFloat()
+                            // Asegurar que min no sea mayor que max
+                            if (filtroCalificacionMin > filtroCalificacionMax) {
+                                filtroCalificacionMax = filtroCalificacionMin
+                            }
+                        }
+                    )
+
+                    Text(
+                        "${filtroCalificacionMin.toInt()}/10",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        "Calificación máxima",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Estrellas para calificación máxima
+                    InteractiveStarRating(
+                        rating = filtroCalificacionMax.toInt(),
+                        onRatingChanged = { newRating ->
+                            filtroCalificacionMax = newRating.toFloat()
+                            // Asegurar que max no sea menor que min
+                            if (filtroCalificacionMax < filtroCalificacionMin) {
+                                filtroCalificacionMin = filtroCalificacionMax
+                            }
+                        }
+                    )
+
+                    Text(
+                        "${filtroCalificacionMax.toInt()}/10",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    if (filtroCalificacionMin == filtroCalificacionMax) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Mostrando solo juegos con ${filtroCalificacionMin.toInt()}/10",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showFilterDialog = false }) {
+                    Text("Aplicar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    filtroCalificacionMin = 0f
+                    filtroCalificacionMax = 10f
+                    showFilterDialog = false
+                }) {
+                    Text("Limpiar")
+                }
+            }
+        )
+    }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -193,6 +376,39 @@ fun SwipeableJuegoCard(
                 onClick = onClick,
                 onAddReview = onAddReview,
                 onViewReviews = onViewReviews
+            )
+        }
+    }
+}
+
+@Composable
+fun InteractiveStarRating(
+    rating: Int,
+    onRatingChanged: (Int) -> Unit,
+    maxRating: Int = 10,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (i in 1..maxRating) {
+            val isSelected = i <= rating
+
+            Icon(
+                imageVector = if (isSelected) Icons.Default.Star else Icons.Default.StarBorder,
+                contentDescription = "Estrella $i",
+                tint = if (isSelected) Color(0xFFFFD700) else MaterialTheme.colorScheme.outline,
+                modifier = Modifier
+                    .size(28.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                onRatingChanged(i)
+                            }
+                        )
+                    }
             )
         }
     }

@@ -91,6 +91,7 @@ fun AppNavHost(
             AgregarReseñaScreen(
                 navController = navController,
                 reviewViewModel = reseñasViewModel,
+                juegosViewModel = juegosViewModel,
                 juegoId = juegoId,
                 usuarioId = usuarioId
             )
