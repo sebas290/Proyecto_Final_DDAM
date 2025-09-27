@@ -52,12 +52,26 @@ fun AppNavHost(
             )
         }
 
+        // Ruta unificada para agregar/editar juego
         composable("agregarJuego/{usuarioId}") { backStackEntry ->
             val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             AgregarJuegoScreen(
                 navController = navController,
                 juegosViewModel = juegosViewModel,
-                usuarioId = usuarioId
+                usuarioId = usuarioId,
+                juegoId = null // null = modo agregar
+            )
+        }
+
+        // Nueva ruta para editar juego (reutiliza la misma pantalla)
+        composable("agregarJuego/{usuarioId}/{juegoId}") { backStackEntry ->
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
+            val juegoId = backStackEntry.arguments?.getString("juegoId")?.toIntOrNull()
+            AgregarJuegoScreen(
+                navController = navController,
+                juegosViewModel = juegosViewModel,
+                usuarioId = usuarioId,
+                juegoId = juegoId // valor = modo editar
             )
         }
 
@@ -81,7 +95,6 @@ fun AppNavHost(
             )
         }
 
-        // Nueva ruta para la pantalla de ajustes, pasando el callback para actualizar preferencias
         composable("settings") {
             SettingsScreen(
                 navController = navController,
