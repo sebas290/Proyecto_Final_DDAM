@@ -3,9 +3,7 @@ package com.example.catalogo.juegos
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -65,6 +63,10 @@ fun ListaJuegosScreen(
             TopAppBar(
                 title = { Text("Lista de Juegos") },
                 actions = {
+                    // Nuevo icono de perfil
+                    IconButton(onClick = { navController.navigate("perfil/$usuarioId") }) {
+                        Icon(Icons.Default.Person, contentDescription = "Perfil")
+                    }
                     IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
@@ -200,8 +202,8 @@ fun SwipeableJuegoCard(
 @Composable
 fun SwipeBackground(dismissState: SwipeToDismissBoxState) {
     val color = when (dismissState.dismissDirection) {
-        SwipeToDismissBoxValue.EndToStart -> Color(0xFFF44336) // Rojo para eliminar
-        SwipeToDismissBoxValue.StartToEnd -> Color(0xFF4CAF50) // Verde para editar
+        SwipeToDismissBoxValue.EndToStart -> Color(0xFFF44336)
+        SwipeToDismissBoxValue.StartToEnd -> Color(0xFF4CAF50)
         SwipeToDismissBoxValue.Settled -> Color.Transparent
     }
 

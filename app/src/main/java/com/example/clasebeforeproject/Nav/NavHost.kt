@@ -11,6 +11,7 @@ import com.example.catalogo.reseñas.AgregarReseñaScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import login.AuthScreen
+import login.PerfilScreen
 import com.example.data.model.UsuariosViewModel
 import com.example.data.model.JuegosViewModel
 import com.example.data.model.ReviewViewModel
@@ -99,6 +100,17 @@ fun AppNavHost(
             SettingsScreen(
                 navController = navController,
                 onSettingsChanged = onSettingsChanged
+            )
+        }
+
+        // Nueva ruta para la pantalla de perfil
+        composable("perfil/{usuarioId}") { backStackEntry ->
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
+            PerfilScreen(
+                navController = navController,
+                usuariosViewModel = usuariosViewModel,
+                auth = auth,
+                usuarioId = usuarioId
             )
         }
     }

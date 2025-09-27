@@ -63,5 +63,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+
+    implementation("androidx.navigation:navigation-compose:2.8.2")
+
     implementation(project(":data"))
 }
