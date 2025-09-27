@@ -16,6 +16,7 @@ import com.example.data.model.UsuariosViewModel
 import com.example.data.model.JuegosViewModel
 import com.example.data.model.ReviewViewModel
 import Settings.SettingsScreen
+import com.example.clasebeforeproject.Splash.SplashScreen
 
 @Composable
 fun AppNavHost(
@@ -27,7 +28,12 @@ fun AppNavHost(
     reseñasViewModel: ReviewViewModel,
     onSettingsChanged: (String, String, Boolean) -> Unit
 ) {
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "splash") {
+
+        // Pantalla de splash
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
 
         composable("login") {
             AuthScreen(
@@ -53,18 +59,16 @@ fun AppNavHost(
             )
         }
 
-        // Ruta unificada para agregar/editar juego
         composable("agregarJuego/{usuarioId}") { backStackEntry ->
             val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             AgregarJuegoScreen(
                 navController = navController,
                 juegosViewModel = juegosViewModel,
                 usuarioId = usuarioId,
-                juegoId = null // null = modo agregar
+                juegoId = null
             )
         }
 
-        // Nueva ruta para editar juego (reutiliza la misma pantalla)
         composable("agregarJuego/{usuarioId}/{juegoId}") { backStackEntry ->
             val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             val juegoId = backStackEntry.arguments?.getString("juegoId")?.toIntOrNull()
@@ -72,7 +76,7 @@ fun AppNavHost(
                 navController = navController,
                 juegosViewModel = juegosViewModel,
                 usuarioId = usuarioId,
-                juegoId = juegoId // valor = modo editar
+                juegoId = juegoId
             )
         }
 
@@ -104,7 +108,6 @@ fun AppNavHost(
             )
         }
 
-        // Nueva ruta para la pantalla de perfil
         composable("perfil/{usuarioId}") { backStackEntry ->
             val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             PerfilScreen(

@@ -86,4 +86,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation("androidx.compose.ui:ui-tooling") // Para @Preview
     debugImplementation(libs.androidx.ui.test.manifest)
+
+//Splash
+    implementation("androidx.navigation:navigation-compose:2.7.3")
+
 }
