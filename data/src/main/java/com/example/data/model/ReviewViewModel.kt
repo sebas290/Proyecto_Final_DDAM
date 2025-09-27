@@ -19,32 +19,47 @@ class ReviewViewModel(private val repository: ReviewsRepository) : ViewModel() {
 
     fun addReseña(resena: Reseña) {
         viewModelScope.launch {
-            repository.insert(resena)
-            _reseñas.value = repository.getResenasPorJuego(resena.videojuegoId)
-            _reseñasConUsuario.value = repository.getResenasConUsuario(resena.videojuegoId)
+            try {
+                repository.insertAndRecalcularPromedio(resena)
+                // actualizar estado solo si la inserción tuvo éxito
+                _reseñas.value = repository.getReseñaPorJuego(resena.videojuegoId)
+                _reseñasConUsuario.value = repository.getReseñaConUsuario(resena.videojuegoId)
+            } catch (e: Exception) {
+                // capturamos y logueamos. Evita que la app muera por una excepción Room.
+                android.util.Log.e("ReviewViewModel", "Error al insertar reseña", e)
+                // Opcional: exponer un StateFlow para la UI muestre un Toast
+            }
         }
     }
 
     fun updateReseña(resena: Reseña) {
         viewModelScope.launch {
             repository.update(resena)
-            _reseñas.value = repository.getResenasPorJuego(resena.videojuegoId)
-            _reseñasConUsuario.value = repository.getResenasConUsuario(resena.videojuegoId)
+            repository.recalcularPromedioYActualizarJuego(resena.videojuegoId)
+            _reseñas.value = repository.getReseñaPorJuego(resena.videojuegoId)
+            _reseñasConUsuario.value = repository.getReseñaConUsuario(resena.videojuegoId)
         }
     }
 
     fun deleteReseña(resena: Reseña) {
         viewModelScope.launch {
             repository.delete(resena)
-            _reseñas.value = repository.getResenasPorJuego(resena.videojuegoId)
-            _reseñasConUsuario.value = repository.getResenasConUsuario(resena.videojuegoId)
+            repository.recalcularPromedioYActualizarJuego(resena.videojuegoId)
+            _reseñas.value = repository.getReseñaPorJuego(resena.videojuegoId)
+            _reseñasConUsuario.value = repository.getReseñaConUsuario(resena.videojuegoId)
         }
     }
 
     fun getReviewPorJuego(juegoId: Int) {
         viewModelScope.launch {
-            _reseñas.value = repository.getResenasPorJuego(juegoId)
-            _reseñasConUsuario.value = repository.getResenasConUsuario(juegoId)
+            _reseñas.value = repository.getReseñaPorJuego(juegoId)
+            _reseñasConUsuario.value = repository.getReseñaConUsuario(juegoId)
+        }
+    }
+
+    fun getTodasLasReseñas() {
+        viewModelScope.launch {
+            _reseñasConUsuario.value = repository.getReseñaConUsuarioYJuego()
         }
     }
 }

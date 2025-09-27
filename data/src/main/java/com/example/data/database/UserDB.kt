@@ -8,7 +8,7 @@ import com.example.data.dao.ReseñaDao
 import com.example.data.dao.UsuarioDao
 
 
-@Database(entities = [Usuarios::class, Juegos::class,Reseña::class ], version = 3, exportSchema = false)
+@Database(entities = [Usuarios::class, Juegos::class,Reseña::class ], version = 4, exportSchema = false)
 @TypeConverters(Converts::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun UserDao(): UsuarioDao

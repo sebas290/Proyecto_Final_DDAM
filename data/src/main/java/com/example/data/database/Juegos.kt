@@ -22,7 +22,7 @@ data class Juegos(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val titulo: String,
     val genero: String,
-    val calificacion: Int,
+    val calificacion: Double = 0.0,
     val descripcion: String,
     val fecha: LocalDateTime,
     val colaboradorId: Int,

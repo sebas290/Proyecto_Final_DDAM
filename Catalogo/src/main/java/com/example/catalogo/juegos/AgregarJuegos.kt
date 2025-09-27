@@ -30,9 +30,11 @@ fun AgregarJuegoScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> archivoUri = uri }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
 
         TextField(
             value = titulo,
@@ -70,7 +72,10 @@ fun AgregarJuegoScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        Button(onClick = { launcher.launch("*/*") }, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = { launcher.launch("*/*") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Seleccionar archivo")
         }
 
@@ -85,7 +90,7 @@ fun AgregarJuegoScreen(
                 val juego = Juegos(
                     titulo = titulo,
                     genero = genero,
-                    calificacion = calificacion.toIntOrNull() ?: 0,
+                    calificacion = calificacion.toDoubleOrNull() ?: 0.0, // <-- Cambio aquí
                     descripcion = descripcion,
                     fecha = LocalDateTime.now(),
                     colaboradorId = usuarioId,
