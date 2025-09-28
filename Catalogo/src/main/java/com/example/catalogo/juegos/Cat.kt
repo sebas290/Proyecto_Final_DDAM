@@ -60,7 +60,7 @@ fun ListaJuegosScreen(
         }
     }
 
-    // Lógica para deshacer eliminación
+    // 🔥 LÓGICA CORREGIDA PARA DESHACER CON RESEÑAS
     deletedJuego?.let { juegoConUsuario ->
         LaunchedEffect(juegoConUsuario) {
             val result = snackBarHostState.showSnackbar(
@@ -70,7 +70,8 @@ fun ListaJuegosScreen(
             )
 
             if (result == SnackbarResult.ActionPerformed) {
-                viewModel.addJuego(juegoConUsuario.juego)
+                // 🔥 USAR LA NUEVA FUNCIÓN QUE RESTAURA JUEGO + RESEÑAS
+                viewModel.restaurarJuegoConReseñas(juegoConUsuario.juego)
                 deletedJuego = null
             } else {
                 deletedJuego = null
@@ -188,6 +189,7 @@ fun ListaJuegosScreen(
                                     navController.navigate("agregarJuego/$usuarioId/${juego.id}")
                                 },
                                 onDelete = { juegoConUsuario ->
+                                    // 🔥 USAR deleteJuego que guarda las reseñas antes de eliminar
                                     viewModel.deleteJuego(juegoConUsuario.juego)
                                     deletedJuego = juegoConUsuario
                                 },
@@ -200,7 +202,7 @@ fun ListaJuegosScreen(
                                     navController.navigate("agregarReseña/${juego.id}/$usuarioId")
                                 },
                                 onViewReviews = { juego ->
-                                    navController.navigate("listaResenas/${juego.id}")
+                                    navController.navigate("listaResenas/${juego.id}/$usuarioId")
                                 }
                             )
                         }
@@ -310,6 +312,7 @@ fun ListaJuegosScreen(
         )
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeableJuegoCard(

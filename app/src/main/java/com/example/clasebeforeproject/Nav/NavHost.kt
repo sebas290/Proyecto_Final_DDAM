@@ -28,12 +28,11 @@ fun AppNavHost(
     usuariosViewModel: UsuariosViewModel,
     juegosViewModel: JuegosViewModel,
     reseñasViewModel: ReviewViewModel,
-    workViewModel: WorkViewModel, // NUEVO: Agregado WorkViewModel
+    workViewModel: WorkViewModel,
     onSettingsChanged: (String, String, Boolean) -> Unit
 ) {
     NavHost(navController = navController, startDestination = "splash") {
 
-        // Pantalla de splash
         composable("splash") {
             SplashScreen(navController = navController)
         }
@@ -56,7 +55,8 @@ fun AppNavHost(
                 navController = navController,
                 viewModel = juegosViewModel,
                 onChatClick = { juegoId ->
-                    navController.navigate("listaResenas/$juegoId")
+                    // 🎯 CORREGIDO: Pasar usuarioId a la navegación
+                    navController.navigate("listaResenas/$juegoId/$usuarioId")
                 },
                 usuarioId = usuarioId
             )
@@ -83,12 +83,15 @@ fun AppNavHost(
             )
         }
 
-        composable("listaResenas/{juegoId}") { backStackEntry ->
+        // 🎯 CORREGIDO: Ruta actualizada para incluir usuarioId
+        composable("listaResenas/{juegoId}/{usuarioId}") { backStackEntry ->
             val juegoId = backStackEntry.arguments?.getString("juegoId")?.toIntOrNull() ?: 0
+            val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toIntOrNull() ?: 0
             ListaReseñasScreen(
                 navController = navController,
                 reviewViewModel = reseñasViewModel,
-                juegoId = juegoId
+                juegoId = juegoId,
+                usuarioId = usuarioId
             )
         }
 
@@ -104,7 +107,6 @@ fun AppNavHost(
             )
         }
 
-        // NUEVO: Pantalla de WorkManager
         composable("workmanager") {
             WorkManagerScreen(
                 workViewModel = workViewModel,

@@ -11,8 +11,9 @@ import com.example.data.ClasesRelacionales.ReseñaConUsuarioYJuego
 
 @Dao
 interface ReseñaDao {
+    // 🔥 CRÍTICO: Debe devolver Long para obtener el ID autogenerado
     @Insert
-    suspend fun insert(reseña: Reseña)
+    suspend fun insert(reseña: Reseña): Long
 
     @Update
     suspend fun update(reseña: Reseña)
@@ -34,7 +35,11 @@ interface ReseñaDao {
     @Query("SELECT * FROM reseñas")
     suspend fun getReseñasConUsuarioYJuego(): List<ReseñaConUsuarioYJuego>
 
-    // -> consulta para calcular promedio de 'estrellas' por juego
+    // Consulta para calcular promedio de 'estrellas' por juego
     @Query("SELECT AVG(estrellas) FROM reseñas WHERE videojuegoId = :juegoId")
     suspend fun getAverageEstrellas(juegoId: Int): Double?
+
+    // Función para borrar todas las reseñas de un juego específico
+    @Query("DELETE FROM reseñas WHERE videojuegoId = :juegoId")
+    suspend fun deleteReseñasPorJuego(juegoId: Int): Int // Devuelve número de filas eliminadas
 }

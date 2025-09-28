@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -29,12 +28,8 @@ import androidx.navigation.NavController
 import com.example.data.database.Reseña
 import com.example.data.model.ReviewViewModel
 import com.example.data.model.JuegosViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDateTime
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +110,7 @@ fun AgregarReseñaScreen(
 
                     isLoading = true
 
-                    Log.d("DEBUG_RESEÑA", "Intentando agregar reseña -> juegoId=$juegoId, usuarioId=$usuarioId")
+                    Log.d("DEBUG_RESEÑA", "Intentando agregar reseña -> juegoId=$juegoId, usuarioId=$usuarioId, estrellas=$estrellas")
 
                     if (juegoId <= 0) {
                         Toast.makeText(ctx, "Id de juego inválido: $juegoId", Toast.LENGTH_LONG).show()
@@ -129,6 +124,7 @@ fun AgregarReseñaScreen(
                     }
 
                     val reseña = Reseña(
+                        id = 0, // Room autogenerará el ID
                         usuarioId = usuarioId,
                         videojuegoId = juegoId,
                         estrellas = estrellas,
@@ -136,36 +132,7 @@ fun AgregarReseñaScreen(
                         fecha = LocalDateTime.now()
                     )
 
-                    // Guardar en base de datos local
-                    reviewViewModel.addReseña(reseña)
-
-                    // Actualizar calificación del juego automáticamente
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            CalificacionHelper.actualizarCalificacionJuego(
-                                juegoId = juegoId,
-                                juegosViewModel = juegosViewModel,
-                                reviewViewModel = reviewViewModel
-                            )
-                        } catch (e: Exception) {
-                            Log.e("CalificacionUpdate", "Error actualizando calificación: ${e.message}")
-                        }
-                    }
-
-                    // Guardar en Firestore
-                    addReseñaToFirestore(reseña) { success, msg ->
-                        if (success) {
-                            Toast.makeText(ctx, "Reseña guardada en Firebase", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(ctx, "Error Firebase: $msg", Toast.LENGTH_LONG).show()
-                        }
-                    }
-
-                    Toast.makeText(ctx, "Reseña agregada exitosamente", Toast.LENGTH_SHORT).show()
-
-                    navController.navigate("listaJuegos/$usuarioId") {
-                        popUpTo("listaJuegos/$usuarioId") { inclusive = true }
-                    }
+                    Log.d("DEBUG_RESEÑA", "Reseña creada: $reseña")
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading && estrellas > 0
@@ -194,31 +161,50 @@ fun AgregarReseñaScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-}
 
-// Función para guardar reseña en Firestore
-private fun addReseñaToFirestore(
-    reseña: Reseña,
-    callback: (Boolean, String) -> Unit
-) {
-    val firestore = FirebaseFirestore.getInstance()
+    // LaunchedEffect para manejar el guardado
+    LaunchedEffect(isLoading) {
+        if (isLoading && estrellas > 0) {
+            try {
+                val reseña = Reseña(
+                    id = 0, // Room autogenerará el ID
+                    usuarioId = usuarioId,
+                    videojuegoId = juegoId,
+                    estrellas = estrellas,
+                    comentario = if (comentario.isBlank()) null else comentario,
+                    fecha = LocalDateTime.now()
+                )
 
-    val reseñaMap = mapOf(
-        "usuarioId" to reseña.usuarioId,
-        "videojuegoId" to reseña.videojuegoId,
-        "estrellas" to reseña.estrellas,
-        "comentario" to reseña.comentario,
-        "fecha" to com.google.firebase.Timestamp.now()
-    )
+                Log.d("DEBUG_RESEÑA", "Guardando reseña: $reseña")
 
-    firestore.collection("reseñas")
-        .add(reseñaMap)
-        .addOnSuccessListener {
-            callback(true, "Reseña guardada exitosamente")
+                // USAR insertAndRecalcularPromedio que maneja Room + Firebase + recálculo
+                reviewViewModel.addReseña(reseña)
+
+                // Esperar un poco para que se complete la operación
+                kotlinx.coroutines.delay(500)
+
+                // Actualizar calificación del juego automáticamente
+                CalificacionHelper.actualizarCalificacionJuego(
+                    juegoId = juegoId,
+                    juegosViewModel = juegosViewModel,
+                    reviewViewModel = reviewViewModel
+                )
+
+                Log.d("DEBUG_RESEÑA", "Reseña guardada exitosamente")
+                Toast.makeText(ctx, "Reseña guardada exitosamente", Toast.LENGTH_SHORT).show()
+
+                navController.navigate("listaJuegos/$usuarioId") {
+                    popUpTo("listaJuegos/$usuarioId") { inclusive = true }
+                }
+
+            } catch (e: Exception) {
+                Log.e("AgregarReseña", "Error al guardar reseña: ${e.message}", e)
+                Toast.makeText(ctx, "Error al guardar: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                isLoading = false
+            }
         }
-        .addOnFailureListener { e ->
-            callback(false, e.message ?: "Error desconocido")
-        }
+    }
 }
 
 @Composable

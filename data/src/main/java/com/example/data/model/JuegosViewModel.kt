@@ -20,7 +20,8 @@ class JuegosViewModel(
     private val _juegos = MutableStateFlow<List<JuegoConUsuario>>(emptyList())
     val juegos: StateFlow<List<JuegoConUsuario>> get() = _juegos
 
-    private var backupReseñas: MutableMap<Int, List<Reseña>> = mutableMapOf()
+    // Almacenar reseñas eliminadas para poder restaurarlas
+    private var reseñasEliminadas: List<Reseña> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -31,9 +32,9 @@ class JuegosViewModel(
     fun addJuego(juego: Juegos) {
         viewModelScope.launch {
             try {
-                repository.insert(juego) // 🔥 Inserta en Room + Firebase
-                restaurarReseñasSiExisten(juego.id)
+                repository.insert(juego)
                 _juegos.value = repository.getJuegosConUsuarios()
+                Log.d("JuegosViewModel", "Juego agregado correctamente")
             } catch (e: Exception) {
                 Log.e("JuegosViewModel", "Error al agregar juego: ${e.message}")
             }
@@ -43,11 +44,10 @@ class JuegosViewModel(
     fun updateJuego(juego: Juegos) {
         viewModelScope.launch {
             try {
-                // Crear un juego actualizado con la fecha actual
                 val juegoActualizado = juego.copy(fecha = java.time.LocalDateTime.now())
-
-                repository.update(juegoActualizado) // 🔥 Actualiza en Room + Firebase
+                repository.update(juegoActualizado)
                 _juegos.value = repository.getJuegosConUsuarios()
+                Log.d("JuegosViewModel", "Juego actualizado correctamente")
             } catch (e: Exception) {
                 Log.e("JuegosViewModel", "Error al actualizar juego: ${e.message}")
             }
@@ -57,26 +57,54 @@ class JuegosViewModel(
     fun deleteJuego(juego: Juegos) {
         viewModelScope.launch {
             try {
-                // 1️⃣ Backup opcional
-                val reseñasDelJuego = reviewsRepository.getReseñaPorJuego(juego.id)
-                if (reseñasDelJuego.isNotEmpty()) {
-                    backupReseñas[juego.id] = reseñasDelJuego
-                    Log.d("JuegosViewModel", "Backup creado con ${reseñasDelJuego.size} reseñas")
+                // 1️⃣ PRIMERO: Guardar las reseñas antes de eliminar
+                reseñasEliminadas = reviewsRepository.getReseñaPorJuego(juego.id)
+                Log.d("JuegosViewModel", "Guardadas ${reseñasEliminadas.size} reseñas para posible recuperación")
+
+                // 2️⃣ SEGUNDO: Eliminar juego y reseñas
+                repository.delete(juego, reviewsRepository)
+
+                // 3️⃣ TERCERO: Actualizar la lista
+                _juegos.value = repository.getJuegosConUsuarios()
+
+                Log.d("JuegosViewModel", "Juego y sus reseñas eliminados correctamente")
+
+            } catch (e: Exception) {
+                Log.e("JuegosViewModel", "Error al eliminar juego y sus reseñas: ${e.message}")
+            }
+        }
+    }
+
+    // Función para restaurar juego con sus reseñas
+    fun restaurarJuegoConReseñas(juego: Juegos) {
+        viewModelScope.launch {
+            try {
+                // 1️⃣ Restaurar el juego
+                repository.insert(juego)
+
+                // 2️⃣ Restaurar las reseñas una por una
+                reseñasEliminadas.forEach { reseña ->
+                    // Crear reseña con ID 0 para que Room genere nuevo ID
+                    val reseñaNueva = reseña.copy(id = 0)
+                    reviewsRepository.insert(reseñaNueva)
                 }
 
-                // 2️⃣ Borrar las reseñas asociadas
-                reseñasDelJuego.forEach { reseña ->
-                    reviewsRepository.delete(reseña)
+                // 3️⃣ Recalcular promedio del juego si había reseñas
+                if (reseñasEliminadas.isNotEmpty()) {
+                    reviewsRepository.recalcularPromedioYActualizarJuego(juego.id)
                 }
-
-                // 3️⃣ Borrar el juego
-                repository.delete(juego)
 
                 // 4️⃣ Actualizar la lista
                 _juegos.value = repository.getJuegosConUsuarios()
 
+                // 5️⃣ Limpiar reseñas eliminadas
+                val cantidadRestaurada = reseñasEliminadas.size
+                reseñasEliminadas = emptyList()
+
+                Log.d("JuegosViewModel", "Juego restaurado con $cantidadRestaurada reseñas")
+
             } catch (e: Exception) {
-                Log.e("JuegosViewModel", "Error al eliminar juego y sus reseñas: ${e.message}")
+                Log.e("JuegosViewModel", "Error al restaurar juego: ${e.message}")
             }
         }
     }
@@ -85,25 +113,13 @@ class JuegosViewModel(
         return _juegos.value.find { it.juego.id == id }
     }
 
-    private suspend fun restaurarReseñasSiExisten(juegoId: Int) {
-        backupReseñas[juegoId]?.let { reseñasBackup ->
-            reseñasBackup.forEach { reseña ->
-                try {
-                    reviewsRepository.insert(reseña)
-                } catch (e: Exception) {
-                    Log.e("JuegosViewModel", "Error al restaurar reseña: ${e.message}")
-                }
+    fun refreshJuegos() {
+        viewModelScope.launch {
+            try {
+                _juegos.value = repository.getJuegosConUsuarios()
+            } catch (e: Exception) {
+                Log.e("JuegosViewModel", "Error al refrescar juegos: ${e.message}")
             }
-            reviewsRepository.recalcularPromedioYActualizarJuego(juegoId)
-            backupReseñas.remove(juegoId)
         }
-    }
-
-    fun clearOldBackups() {
-        backupReseñas.clear()
-    }
-
-    fun hasBackupForGame(juegoId: Int): Boolean {
-        return backupReseñas.containsKey(juegoId)
     }
 }

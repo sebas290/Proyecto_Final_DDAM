@@ -6,10 +6,12 @@ import com.example.data.dao.JuegoDao
 import com.google.firebase.firestore.CollectionReference
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 class JuegoRepository(
     private val juegoDao: JuegoDao,
-    private val juegosCollection: CollectionReference
+    private val juegosCollection: CollectionReference,
+    private val reseñasCollection: CollectionReference // Para manejar las reseñas
 ) {
 
     // Función para convertir Juegos a Map compatible con Firebase
@@ -27,32 +29,57 @@ class JuegoRepository(
     }
 
     suspend fun insert(juego: Juegos) {
-        // Insertar en Room y obtener id autogenerado
-        val roomId = juegoDao.insert(juego).toInt()
+        try {
+            // Insertar en Room y obtener id autogenerado
+            val roomId = juegoDao.insert(juego).toInt()
 
-        // Insertar en Firebase usando el mapa convertido
-        val juegoConId = juego.copy(id = roomId)
-        juegosCollection.document(roomId.toString())
-            .set(juegoToFirebaseMap(juegoConId))
-            .await()
+            // Insertar en Firebase usando el mapa convertido
+            val juegoConId = juego.copy(id = roomId)
+            juegosCollection.document(roomId.toString())
+                .set(juegoToFirebaseMap(juegoConId))
+                .await()
+
+            Log.d("JuegoRepository", "Juego insertado correctamente con ID: $roomId")
+        } catch (e: Exception) {
+            Log.e("JuegoRepository", "Error al insertar juego", e)
+            throw e
+        }
     }
 
     suspend fun update(juego: Juegos) {
-        //Actualizar en Room
-        juegoDao.update(juego)
+        try {
+            //Actualizar en Room
+            juegoDao.update(juego)
 
-        //Actualizar en Firebase usando el mapa convertido
-        juegosCollection.document(juego.id.toString())
-            .set(juegoToFirebaseMap(juego))
-            .await()
+            //Actualizar en Firebase usando el mapa convertido
+            juegosCollection.document(juego.id.toString())
+                .set(juegoToFirebaseMap(juego))
+                .await()
+
+            Log.d("JuegoRepository", "Juego actualizado correctamente")
+        } catch (e: Exception) {
+            Log.e("JuegoRepository", "Error al actualizar juego", e)
+            throw e
+        }
     }
 
-    suspend fun delete(juego: Juegos) {
-        // Borrar en Room
-        juegoDao.delete(juego)
+    suspend fun delete(juego: Juegos, reviewsRepository: ReviewsRepository) {
+        try {
+            // 1️⃣ PRIMERO: Borrar todas las reseñas usando el ReviewsRepository
+            reviewsRepository.deleteReseñasPorJuego(juego.id)
 
-        // Borrar en Firebase
-        juegosCollection.document(juego.id.toString()).delete().await()
+            // 2️⃣ SEGUNDO: Borrar el juego de Room
+            juegoDao.delete(juego)
+
+            // 3️⃣ TERCERO: Borrar el juego de Firebase
+            juegosCollection.document(juego.id.toString()).delete().await()
+
+            Log.d("JuegoRepository", "Juego ${juego.id} eliminado completamente con todas sus reseñas")
+
+        } catch (e: Exception) {
+            Log.e("JuegoRepository", "Error al eliminar juego y sus reseñas", e)
+            throw e
+        }
     }
 
     suspend fun getAllJuegos(): List<Juegos> = juegoDao.getAll()

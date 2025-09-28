@@ -30,7 +30,10 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
+
+        // 🎯 ACTUALIZADO: Obtener ambas colecciones de Firebase
         val juegosCollection = db.collection("juegos")
+        val reseñasCollection = db.collection("reseñas")
 
         // Room
         val roomDb = Room.databaseBuilder(
@@ -41,12 +44,22 @@ class MainActivity : ComponentActivity() {
             .fallbackToDestructiveMigration()
             .build()
 
-        // Repositorios existentes
+        // 🎯 ACTUALIZADO: Repositorios con las nuevas dependencias
         val usuariosRepository = UsuariosRepository(roomDb.UserDao())
-        val juegosRepository = JuegoRepository(roomDb.GameDao(), juegosCollection)
-        val reseñasRepository = ReviewsRepository(roomDb.ReviewDao(), roomDb.GameDao())
 
-        // NUEVO: WorkManager Repository
+        val juegosRepository = JuegoRepository(
+            juegoDao = roomDb.GameDao(),
+            juegosCollection = juegosCollection,
+            reseñasCollection = reseñasCollection // 🎯 NUEVA dependencia
+        )
+
+        val reseñasRepository = ReviewsRepository(
+            reseñaDao = roomDb.ReviewDao(),
+            juegoDao = roomDb.GameDao(),
+            reseñasCollection = reseñasCollection // 🎯 NUEVA dependencia
+        )
+
+        // WorkManager Repository (sin cambios)
         val workManagerRepository = WorkManagerRepository(this)
 
         // ViewModels existentes
@@ -62,7 +75,7 @@ class MainActivity : ComponentActivity() {
             this, ReviewViewModelFactory(reseñasRepository)
         )[ReviewViewModel::class.java]
 
-        // NUEVO: WorkManager ViewModel
+        // WorkManager ViewModel (sin cambios)
         val workViewModel = ViewModelProvider(
             this, WorkViewModelFactory(workManagerRepository)
         )[WorkViewModel::class.java]
@@ -95,7 +108,7 @@ class MainActivity : ComponentActivity() {
                         usuariosViewModel = usuariosViewModel,
                         juegosViewModel = juegosViewModel,
                         reseñasViewModel = reseñasViewModel,
-                        workViewModel = workViewModel, // NUEVO: Pasar WorkViewModel
+                        workViewModel = workViewModel,
                         onSettingsChanged = { newTheme, newFont, newHighContrast ->
                             themePref = newTheme
                             fontPref = newFont
