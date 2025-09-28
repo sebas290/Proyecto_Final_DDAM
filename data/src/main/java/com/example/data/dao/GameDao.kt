@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface JuegoDao {
     @Insert
-    suspend fun insert(juego: Juegos)
+    suspend fun insert(juego: Juegos): Long
 
     @Insert
     suspend fun insertarJuego(juego: Juegos)

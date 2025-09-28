@@ -18,6 +18,8 @@ import com.example.data.repository.*
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.data.repository.WorkManagerRepository
+import com.example.data.model.WorkViewModelFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -28,6 +30,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
+        val juegosCollection = db.collection("juegos")
 
         // Room
         val roomDb = Room.databaseBuilder(
@@ -38,17 +41,19 @@ class MainActivity : ComponentActivity() {
             .fallbackToDestructiveMigration()
             .build()
 
-        // Repositorios
+        // Repositorios existentes
         val usuariosRepository = UsuariosRepository(roomDb.UserDao())
-        val juegosRepository = JuegoRepository(roomDb.GameDao())
+        val juegosRepository = JuegoRepository(roomDb.GameDao(), juegosCollection)
         val reseñasRepository = ReviewsRepository(roomDb.ReviewDao(), roomDb.GameDao())
 
-        // ViewModels
+        // NUEVO: WorkManager Repository
+        val workManagerRepository = WorkManagerRepository(this)
+
+        // ViewModels existentes
         val usuariosViewModel = ViewModelProvider(
             this, UsuariosViewModelFactory(usuariosRepository)
         )[UsuariosViewModel::class.java]
 
-        // CAMBIO AQUÍ: Pasar ambos repositorios al JuegosViewModelFactory
         val juegosViewModel = ViewModelProvider(
             this, JuegosViewModelFactory(juegosRepository, reseñasRepository)
         )[JuegosViewModel::class.java]
@@ -56,6 +61,11 @@ class MainActivity : ComponentActivity() {
         val reseñasViewModel = ViewModelProvider(
             this, ReviewViewModelFactory(reseñasRepository)
         )[ReviewViewModel::class.java]
+
+        // NUEVO: WorkManager ViewModel
+        val workViewModel = ViewModelProvider(
+            this, WorkViewModelFactory(workManagerRepository)
+        )[WorkViewModel::class.java]
 
         setContent {
             val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
@@ -85,6 +95,7 @@ class MainActivity : ComponentActivity() {
                         usuariosViewModel = usuariosViewModel,
                         juegosViewModel = juegosViewModel,
                         reseñasViewModel = reseñasViewModel,
+                        workViewModel = workViewModel, // NUEVO: Pasar WorkViewModel
                         onSettingsChanged = { newTheme, newFont, newHighContrast ->
                             themePref = newTheme
                             fontPref = newFont

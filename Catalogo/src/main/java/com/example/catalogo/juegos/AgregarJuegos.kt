@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.data.database.Juegos
 import com.example.data.model.JuegosViewModel
-import com.example.data.firebase.addJuegoToFirestore
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,7 +99,7 @@ fun AgregarJuegoScreen(
             Spacer(Modifier.height(8.dp))
 
             Button(
-                onClick = { launcher.launch("*/*") },
+                onClick = { launcher.launch("*/*") }, // FIXED: Changed from "/" to "*/*"
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {
@@ -133,7 +132,6 @@ fun AgregarJuegoScreen(
                             descripcion = descripcion,
                             archivoUri = archivoUri?.toString()
                         )
-
                         juegosViewModel.updateJuego(juegoActualizado)
                         Toast.makeText(context, "Juego actualizado exitosamente", Toast.LENGTH_SHORT).show()
                     } else {
@@ -146,21 +144,11 @@ fun AgregarJuegoScreen(
                             colaboradorId = usuarioId,
                             archivoUri = archivoUri?.toString()
                         )
-
                         juegosViewModel.addJuego(juego)
-
-                        // Guardar en Firestore
-                        addJuegoToFirestore(juego) { success, msg ->
-                            if (success) {
-                                Toast.makeText(context, "Juego agregado en Firebase", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(context, "Error Firebase: $msg", Toast.LENGTH_LONG).show()
-                            }
-                        }
-
                         Toast.makeText(context, "Juego creado exitosamente", Toast.LENGTH_SHORT).show()
                     }
 
+                    isLoading = false
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth(),
