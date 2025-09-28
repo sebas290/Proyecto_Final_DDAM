@@ -310,8 +310,6 @@ fun ListaJuegosScreen(
         )
     }
 }
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeableJuegoCard(
@@ -462,13 +460,15 @@ fun JuegoCard(
 ) {
     val juego = juegoConUsuario.juego
     val usuario = juegoConUsuario.usuario
+    val context = LocalContext.current
 
-    // Estado para detectar si está siendo presionado
+    // Estados de animación
+    var isExpanded by remember { mutableStateOf(false) }
     var isPressed by remember { mutableStateOf(false) }
 
     // Animación de escala basada en si está presionado
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 1.05f else 1f,
+        targetValue = if (isPressed) 1.02f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -476,9 +476,20 @@ fun JuegoCard(
         label = "CardPressScale"
     )
 
+    // Animación de expansión
+    val expandedHeight by animateDpAsState(
+        targetValue = if (isExpanded) 420.dp else 200.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "CardExpansion"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 200.dp, max = expandedHeight)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -486,7 +497,7 @@ fun JuegoCard(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
-                        // Se presiona - hacer grande
+                        // Se presiona - hacer ligeramente más pequeño
                         isPressed = true
 
                         // Esperar hasta que se suelte
@@ -494,12 +505,20 @@ fun JuegoCard(
 
                         // Se soltó - volver al tamaño normal
                         isPressed = false
+                    },
+                    onTap = {
+                        // Toggle expansión
+                        isExpanded = !isExpanded
+                        // También ejecutar el onClick original si no está expandido
+                        if (!isExpanded) {
+                            onClick(juego)
+                        }
                     }
                 )
             },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isPressed) 8.dp else 4.dp,
+            defaultElevation = if (isExpanded) 8.dp else 4.dp,
             pressedElevation = 12.dp
         )
     ) {
@@ -572,10 +591,146 @@ fun JuegoCard(
             Text(
                 text = juego.descripcion,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                overflow = if (isExpanded) TextOverflow.Visible else TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Contenido adicional cuando está expandido
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                Column {
+                    Spacer(Modifier.height(12.dp))
+
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // Información adicional del juego
+                    Text(
+                        text = "Detalles del juego",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Colaborador",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = usuario.alias,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "ID del juego",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "#${juego.id}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    // Mostrar archivo si existe
+                    juego.archivoUri?.let { archivoUri ->
+                        Spacer(Modifier.height(12.dp))
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Archivo adjunto",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = archivoUri.substringAfterLast("/").ifEmpty { "Archivo disponible" },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        // Aquí puedes implementar la lógica para abrir el archivo
+                                        // Por ejemplo, usando un Intent para abrir el archivo
+                                        Toast.makeText(
+                                            context,
+                                            "Abrir archivo: ${archivoUri.substringAfterLast("/")}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    modifier = Modifier.size(width = 80.dp, height = 32.dp),
+                                    contentPadding = PaddingValues(4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Description,
+                                        contentDescription = "Abrir archivo",
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Indicador de toque para cerrar
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.ExpandLess,
+                            contentDescription = "Cerrar",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "Toca para cerrar",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -611,14 +766,42 @@ fun JuegoCard(
                 }
             }
 
-            // Hint para swipe si es el propietario
-            if (isOwner) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Desliza → para editar o ← para eliminar",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            // Hint para swipe si es el propietario y botón de expansión
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isOwner) {
+                    Text(
+                        text = "Desliza → editar, ← eliminar",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+                // Indicador de expansión
+                if (!isExpanded) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "Ver más",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Icon(
+                            Icons.Default.ExpandMore,
+                            contentDescription = "Expandir",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
         }
     }
