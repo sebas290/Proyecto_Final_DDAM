@@ -15,8 +15,10 @@ import login.PerfilScreen
 import com.example.data.model.UsuariosViewModel
 import com.example.data.model.JuegosViewModel
 import com.example.data.model.ReviewViewModel
+import com.example.data.model.WorkViewModel
 import Settings.SettingsScreen
 import com.example.clasebeforeproject.Splash.SplashScreen
+import com.example.clasebeforeproject.screens.WorkManagerScreen
 
 @Composable
 fun AppNavHost(
@@ -26,6 +28,7 @@ fun AppNavHost(
     usuariosViewModel: UsuariosViewModel,
     juegosViewModel: JuegosViewModel,
     reseñasViewModel: ReviewViewModel,
+    workViewModel: WorkViewModel, // NUEVO: Agregado WorkViewModel
     onSettingsChanged: (String, String, Boolean) -> Unit
 ) {
     NavHost(navController = navController, startDestination = "splash") {
@@ -98,6 +101,14 @@ fun AppNavHost(
                 juegosViewModel = juegosViewModel,
                 juegoId = juegoId,
                 usuarioId = usuarioId
+            )
+        }
+
+        // NUEVO: Pantalla de WorkManager
+        composable("workmanager") {
+            WorkManagerScreen(
+                workViewModel = workViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 

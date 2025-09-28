@@ -90,4 +90,13 @@ dependencies {
 //Splash
     implementation("androidx.navigation:navigation-compose:2.7.3")
 
+    //WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+
+    // Para usar await() con ListenableFuture - OBLIGATORIA
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
+
+    // Opcional: Para testing de WorkManager
+    androidTestImplementation("androidx.work:work-testing:2.9.0")
 }
